@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  serverExternalPackages: ["oracledb"],
 };
 
 export default nextConfig;

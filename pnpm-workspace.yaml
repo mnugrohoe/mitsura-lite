@@ -1,0 +1,4 @@
+allowBuilds:
+  bcrypt: false
+  oracledb: false
+  unrs-resolver: false
