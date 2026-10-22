@@ -1,18 +1,23 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
 import { authConfig } from "./auth.config";
-import { loginSchema, User } from "@/lib/definitions";
+import { loginSchema } from "@/lib/definitions";
+import {
+  getUserByUsername,
+  recordFailedLogin,
+  resetFailedLogin,
+} from "./features/user/queries";
+import { verifyPassword } from "./lib/password";
 
 // TEMP for learning. Replace with a DB query later.
 // Make a hash once with: await bcrypt.hash("secret123", 10)
-const users: User[] = [
-  {
-    id: "1",
-    username: "admin",
-    password: "$2b$10$LScNBEz4msrS5CFSM/ZzqunoC1bG00tc01WHz9KFg3TjI/NZZDl9e",
-  },
-];
+// const users: User[] = [
+//   {
+//     id: "1",
+//     username: "admin",
+//     password: "f572daf95bf1df4fad551bb858ad29228df957b0",
+//   },
+// ];
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -23,11 +28,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (!parsed.success) return null;
 
         const { username, password } = parsed.data;
-        const user = users.find((u) => u.username === username);
+        const user = await getUserByUsername(username);
+        console.log("user", user);
         if (!user) return null;
+        if (user.locked) return null;
 
-        const ok = await bcrypt.compare(password, user.password);
-        return ok ? { id: user.id, name: user.username } : null;
+        if (!verifyPassword(password, user.passwordHash)) {
+          await recordFailedLogin(user.id);
+          return null;
+        }
+
+        if (user.failedAttempts > 0) await resetFailedLogin(user.id);
+
+        return {
+          id: user.id,
+          name: user.username,
+          role: user.roleName ?? "CUSTOM",
+        };
       },
     }),
   ],
