@@ -20,15 +20,15 @@ export const authConfig = {
     // runs at login (user exists) and on later requests (only token exists)
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.username = user.username;
+        const { id, ...rest } = user;
+        token.id = id as string;
+        token.user = rest;
       }
       return token;
     },
     // shapes what auth() / useSession() return
     session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.username = token.username as string;
+      Object.assign(session.user, token.user, { id: token.id });
       return session;
     },
   },

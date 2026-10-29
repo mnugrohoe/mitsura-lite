@@ -1,5 +1,6 @@
 import "server-only";
 import oracledb from "oracledb";
+import { connection } from "next/server";
 
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 oracledb.fetchAsString = [oracledb.CLOB];
@@ -43,10 +44,11 @@ export async function query<T = Record<string, unknown>>(
   binds: oracledb.BindParameters = {},
   options: oracledb.ExecuteOptions = {},
 ): Promise<T[]> {
+  await connection();
   const pool = await getPool();
   const conn = await pool.getConnection();
   try {
-    const result = await conn.execute<T>(sql, binds, options);
+    const result = await conn.execute<T>(sql.trim(), binds, options);
     return (result.rows ?? []) as T[];
   } finally {
     await conn.close();
@@ -60,7 +62,7 @@ export async function execute(
   const pool = await getPool();
   const conn = await pool.getConnection();
   try {
-    const result = await conn.execute(sql, binds, { autoCommit: true });
+    const result = await conn.execute(sql.trim(), binds, { autoCommit: true });
     return result.rowsAffected ?? 0;
   } finally {
     await conn.close();

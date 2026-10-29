@@ -10,6 +10,7 @@ export type UserRecord = {
   username: string;
   fullName: string | null;
   passwordHash: string | null;
+  email: string | null;
   failedAttempts: number;
   locked: boolean;
   roleId: string | null;

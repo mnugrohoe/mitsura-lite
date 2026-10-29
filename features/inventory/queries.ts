@@ -3,45 +3,11 @@ import { query } from "@/lib/oracle";
 import {
   type DomainFilter,
   type DomainItem,
+  FilterOperator,
   createDomain,
   parseDomainFilter,
 } from "@/lib/filter";
-
-/* ---------- Tipe ---------- */
-
-// Bentuk mentah dari Oracle (nama kolom huruf besar)
-type Raw = {
-  ITEM: string;
-  DESCRIPTION: string | null;
-  I_GROUP: string | null;
-  WHSE: string | null;
-  BIN_LOC: string | null;
-  BRAND: string | null;
-  ONHAND: number | null;
-  OH_TOTAL: number | null;
-  UOM: string | null;
-  MIN_STOCK: number | null;
-  SALES_CAT: string | null;
-  SALESPRICE: number | null;
-  UNITCOST: number | null;
-  PURCHASEPRICE: number | null;
-  PUR_CURR: string | null;
-  AMOUNT: number | null;
-  PO_TYPE: string | null;
-};
-
-// Bentuk yang dipakai di aplikasi (camelCase)
-export type InventoryRow = {
-  item: string;
-  description: string | null;
-  whse: string | null;
-  binLoc: string | null;
-  brand: string | null;
-  onhand: number | null;
-  uom: string | null;
-  unitCost: number | null;
-  amount: number | null;
-};
+import type { InventoryRow, Raw } from "./definitions";
 
 function mapRow(r: Raw): InventoryRow {
   return {
@@ -114,45 +80,52 @@ function buildWhere(f: InventoryFilter) {
     conditions.push(["brand", "ilike", f.brand.trim()]);
   }
 
+  if (f.domain?.length) {
+    conditions.push(f.domain);
+  }
+
   const onhand = f.onhand?.trim();
 
   if (onhand) {
     const match = onhand.match(/^(>=|<=|>|<|=)?\s*(\d+(?:\.\d+)?)$/);
 
     if (match) {
-      const operator = match[1] || "=";
+      const operator = (match[1] || "=") as FilterOperator;
       const value = Number(match[2]);
 
       conditions.push(["onhand", operator, value]);
     }
   }
 
-  if (conditions.length === 0) {
-    return { clause: "", binds: {} };
-  }
+  if (conditions.length === 0) return { clause: "", binds: {} };
 
   return parseDomainFilter(createDomain(conditions));
 }
 
 /* ---------- Query untuk halaman (dengan paginasi, gaya Oracle 11g) ---------- */
 
-export async function getInventoryPage(
-  filter: InventoryFilter = {},
+export async function getInventoryPage({
+  filter = {},
   page = 1,
   pageSize = 50,
-) {
+}: {
+  filter?: InventoryFilter;
+  page?: number;
+  pageSize?: number;
+} = {}) {
   const { clause, binds } = buildWhere(filter);
   const maxRow = page * pageSize;
   const minRow = (page - 1) * pageSize;
 
-  const q = `SELECT * FROM (
-       SELECT t.*, ROWNUM rn FROM (
-         SELECT * FROM (${BASE_SQL}) ${clause} ORDER BY item, whse
-       ) t
-       WHERE ROWNUM <= :maxRow
-     )
-     WHERE rn > :minRow`;
-
+  const q = `
+  SELECT * FROM (
+    SELECT t.*, ROWNUM rn FROM (
+      SELECT * FROM (${BASE_SQL}) ${clause} ORDER BY item, whse
+    ) t
+    WHERE ROWNUM <= :maxRow
+  )
+  WHERE rn > :minRow`;
+  // console.log(q, { ...binds, maxRow, minRow });
   const rows = await query<Raw>(q, { ...binds, maxRow, minRow });
 
   const [{ TOTAL }] = await query<{ TOTAL: number }>(
@@ -164,7 +137,6 @@ export async function getInventoryPage(
 }
 
 /* ---------- Query untuk export (semua baris, tanpa paginasi) ---------- */
-
 export async function getInventoryRows(
   filter: InventoryFilter = {},
 ): Promise<InventoryRow[]> {

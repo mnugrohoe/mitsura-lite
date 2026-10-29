@@ -8,6 +8,7 @@ type LoginRaw = {
   USR_ID: number | string;
   USR_NAME: string;
   USR_DESCRIPTION: string | null;
+  USR_EMAIL: string | null;
   USR_LOCKED: number | null;
   USR_MD5_PASSWORD: string | null;
   USR_ROL_ID: number | string | null;
@@ -20,7 +21,7 @@ export async function getUserByUsername(
 ): Promise<UserRecord | null> {
   const rows = await query<LoginRaw>(
     `SELECT u.usr_id, TRIM(u.usr_name) AS usr_name, u.usr_description,
-            u.usr_locked, u.usr_md5_password, u.usr_rol_id,
+            u.usr_locked, u.usr_md5_password, u.usr_rol_id, u.usr_email,
             r.rol_name, r.rol_offset
        FROM users u
        LEFT JOIN role r ON u.usr_rol_id = r.rol_id
@@ -38,6 +39,7 @@ export async function getUserByUsername(
     id: String(r.USR_ID),
     username: r.USR_NAME,
     fullName: r.USR_DESCRIPTION?.trim() ?? null,
+    email: r.USR_EMAIL,
     passwordHash: r.USR_MD5_PASSWORD,
     failedAttempts,
     locked: failedAttempts >= MAX_LOGIN_ATTEMPTS,

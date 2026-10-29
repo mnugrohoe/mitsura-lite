@@ -8,6 +8,7 @@ import {
   resetFailedLogin,
 } from "./features/user/queries";
 import { verifyPassword } from "./lib/password";
+import { UserRecord } from "./features/user/definitions";
 
 // TEMP for learning. Replace with a DB query later.
 // Make a hash once with: await bcrypt.hash("secret123", 10)
@@ -28,8 +29,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (!parsed.success) return null;
 
         const { username, password } = parsed.data;
-        const user = await getUserByUsername(username);
-        console.log("user", user);
+        const user: UserRecord | null = await getUserByUsername(username);
         if (!user) return null;
         if (user.locked) return null;
 
@@ -42,8 +42,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
         return {
           id: user.id,
-          name: user.username,
-          role: user.roleName ?? "CUSTOM",
+          username: user.username,
+          fullname: user.fullName,
+          email: user.email,
+          role: user.roleName?.trim() ?? "CUSTOM",
         };
       },
     }),
