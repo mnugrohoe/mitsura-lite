@@ -45,12 +45,12 @@ function isLeaf(x: unknown): x is FilterCondition {
  */
 export function parseDomainFilter(
   domain: DomainFilter,
-  fields?: FieldMap,
+  fields: FieldMap,
 ): {
   clause: string;
   binds: Record<string, BindValue>;
 } {
-  const safe = fields ? sanitizeDomain(domain, fields) : domain;
+  const safe = sanitizeDomain(domain, fields);
 
   let bindIndex = 1;
   const binds: Record<string, BindValue> = {};

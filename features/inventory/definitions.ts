@@ -1,7 +1,3 @@
-/* ---------- Tipe ---------- */
-
-import { DefaultParams, FieldMap } from "@/lib/filter";
-
 // Bentuk mentah dari Oracle (nama kolom huruf besar)
 export type Raw = {
   ITEM: string;
@@ -34,22 +30,6 @@ export type InventoryRow = {
   uom: string | null;
   unitCost: number | null;
   amount: number | null;
-};
-
-export const INVENTORY_FIELDS: FieldMap = {
-  item: "text",
-  description: "text",
-  whse: "text",
-  bin_loc: "text",
-  brand: "text",
-  uom: "text",
-  onhand: "number",
-  unitcost: "number",
-  amount: "number",
-};
-
-export const INVENTORY_DEFAULTS: DefaultParams = {
-  onhand: ">0",
 };
 
 export type FacetOption = { value: string; count: number };

@@ -3,11 +3,11 @@ import { query } from "@/lib/oracle";
 import {
   type DomainFilter,
   type DomainItem,
-  FilterOperator,
   createDomain,
   parseDomainFilter,
 } from "@/lib/filter";
 import type { InventoryRow, Raw } from "./definitions";
+import { inventoryFilter } from "./filter.config";
 
 function mapRow(r: Raw): InventoryRow {
   return {
@@ -56,50 +56,50 @@ FROM m_item a
 /* ---------- Filter ---------- */
 
 export type InventoryFilter = {
-  q?: string; // cari part number / deskripsi
-  whse?: string; // lokasi gudang
-  brand?: string;
-  onhand?: string;
+  // q?: string; // cari part number / deskripsi
+  // whse?: string; // lokasi gudang
+  // brand?: string;
+  // onhand?: string;
   domain?: DomainFilter;
 };
 
 function buildWhere(f: InventoryFilter) {
   const conditions: DomainItem[] = [];
 
-  const q = f.q?.trim();
+  // const q = f.q?.trim();
 
-  if (q) {
-    conditions.push(["|", ["item", "like", q], ["description", "like", q]]);
-  }
+  // if (q) {
+  //   conditions.push(["|", ["item", "like", q], ["description", "like", q]]);
+  // }
 
-  if (f.whse?.trim()) {
-    conditions.push(["whse", "ilike", f.whse.trim()]);
-  }
+  // if (f.whse?.trim()) {
+  //   conditions.push(["whse", "ilike", f.whse.trim()]);
+  // }
 
-  if (f.brand?.trim()) {
-    conditions.push(["brand", "ilike", f.brand.trim()]);
-  }
+  // if (f.brand?.trim()) {
+  //   conditions.push(["brand", "ilike", f.brand.trim()]);
+  // }
 
   if (f.domain?.length) {
     conditions.push(f.domain);
   }
 
-  const onhand = f.onhand?.trim();
+  // const onhand = f.onhand?.trim();
 
-  if (onhand) {
-    const match = onhand.match(/^(>=|<=|>|<|=)?\s*(\d+(?:\.\d+)?)$/);
+  // if (onhand) {
+  //   const match = onhand.match(/^(>=|<=|>|<|=)?\s*(\d+(?:\.\d+)?)$/);
 
-    if (match) {
-      const operator = (match[1] || "=") as FilterOperator;
-      const value = Number(match[2]);
+  //   if (match) {
+  //     const operator = (match[1] || "=") as FilterOperator;
+  //     const value = Number(match[2]);
 
-      conditions.push(["onhand", operator, value]);
-    }
-  }
+  //     conditions.push(["onhand", operator, value]);
+  //   }
+  // }
 
   if (conditions.length === 0) return { clause: "", binds: {} };
 
-  return parseDomainFilter(createDomain(conditions));
+  return parseDomainFilter(createDomain(conditions), inventoryFilter.types);
 }
 
 /* ---------- Query untuk halaman (dengan paginasi, gaya Oracle 11g) ---------- */
