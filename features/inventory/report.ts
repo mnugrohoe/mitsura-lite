@@ -1,18 +1,16 @@
 import { getInventoryRows } from "./queries";
 
 const columns = [
-  "NO.",
-  "PART NUMBER",
-  "OTHER P/N",
-  "DESCRIPTION",
-  "ON-HAND",
-  "UOM",
-  "LOKASI",
-  "BIN LOC",
-  "BRAND",
-  "PO TYPE",
+  "No.",
+  "Part Number",
+  "Description",
+  "Onhand",
+  "UoM",
+  "Loc",
+  "Bin Loc",
+  "Brand",
   "COGS",
-  "AMOUNT",
+  "Amount",
 ];
 
 export async function buildInventoryReport() {
@@ -27,10 +25,9 @@ export async function buildInventoryReport() {
       r.onhand,
       r.uom,
       r.whse,
-      r.binLoc,
+      r.bin_loc,
       r.brand,
-      r.poType,
-      r.unitCost,
+      r.unit_cost,
       r.amount,
     ]),
   };

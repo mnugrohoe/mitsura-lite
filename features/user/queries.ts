@@ -5,15 +5,15 @@ import type { UserRecord } from "./definitions";
 export const MAX_LOGIN_ATTEMPTS = 3;
 
 type LoginRaw = {
-  USR_ID: number | string;
-  USR_NAME: string;
-  USR_DESCRIPTION: string | null;
-  USR_EMAIL: string | null;
-  USR_LOCKED: number | null;
-  USR_MD5_PASSWORD: string | null;
-  USR_ROL_ID: number | string | null;
-  ROL_NAME: string | null;
-  ROL_OFFSET: number | string | null;
+  usr_id: number | string;
+  usr_name: string;
+  usr_description: string | null;
+  usr_email: string | null;
+  usr_locked: number | null;
+  usr_md5_password: string | null;
+  usr_rol_id: number | string | null;
+  rol_name: string | null;
+  rol_offset: number | string | null;
 };
 
 export async function getUserByUsername(
@@ -33,19 +33,19 @@ export async function getUserByUsername(
   const r = rows[0];
   if (!r) return null;
 
-  const failedAttempts = Number(r.USR_LOCKED ?? 0);
+  const failed_attempts = Number(r.usr_locked ?? 0);
 
   return {
-    id: String(r.USR_ID),
-    username: r.USR_NAME,
-    fullName: r.USR_DESCRIPTION?.trim() ?? null,
-    email: r.USR_EMAIL,
-    passwordHash: r.USR_MD5_PASSWORD,
-    failedAttempts,
-    locked: failedAttempts >= MAX_LOGIN_ATTEMPTS,
-    roleId: r.USR_ROL_ID == null ? null : String(r.USR_ROL_ID),
-    roleName: r.ROL_NAME,
-    rolOffset: r.ROL_OFFSET == null ? null : String(r.ROL_OFFSET),
+    id: String(r.usr_id),
+    username: r.usr_name,
+    fullName: r.usr_description?.trim() ?? null,
+    email: r.usr_email,
+    password_hash: r.usr_md5_password,
+    failed_attempts,
+    locked: failed_attempts >= MAX_LOGIN_ATTEMPTS,
+    role_id: r.usr_rol_id == null ? null : String(r.usr_rol_id),
+    role_name: r.rol_name,
+    rol_offset: r.rol_offset == null ? null : String(r.rol_offset),
   };
 }
 

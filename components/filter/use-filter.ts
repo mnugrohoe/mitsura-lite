@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import {
   defaultState,
+  describeGroup,
   type FilterConfig,
   type FilterState,
 } from "@/lib/filter-config";
@@ -24,27 +25,57 @@ export function useFilter<R extends { state: FilterState }>(
       templates: state.templates.includes(k) ? [] : [k],
     });
 
+  const opSymbol = (op: string) =>
+    op === "=" || op === "like" || op === "ilike" ? ":" : op;
+
+  const customLabel = state.custom
+    .map(({ join, cond: [f, op, v] }, i) => {
+      const link = i === 0 ? "" : join === "|" ? " or " : " and ";
+      return `${link}${cfg.fields[f]?.label ?? f}${opSymbol(op)}${v}`;
+    })
+    .join("");
+
   const badges = [
     ...state.templates.map((k) => ({
       id: `t-${k}`,
       label: cfg.templates[k].label,
       remove: () => toggleTemplate(k),
     })),
-    ...(state.search
+    ...Object.entries(state.groups).flatMap(([k, v]) => {
+      const g = cfg.groups[k];
+      if (!g) return [];
+      return [
+        {
+          id: `g-${k}`,
+          label: describeGroup(g, v),
+          remove: () =>
+            apply({
+              ...state,
+              groups: Object.fromEntries(
+                Object.entries(state.groups).filter(([x]) => x !== k),
+              ),
+            }),
+        },
+      ];
+    }),
+    ...(state.search.length
       ? [
           {
             id: "q",
-            label: `Search: ${state.search}`,
-            remove: () => apply({ ...state, search: "" }),
+            label: `Search: ${state.search.join(" or ")}`,
+            remove: () => apply({ ...state, search: [] }),
           },
         ]
       : []),
-    ...state.custom.map(([f, op, v], i) => ({
-      id: `c-${i}`,
-      label: `${cfg.fields[f]?.label ?? f} ${op === "like" || op === "ilike" ? "~" : op} ${v}`,
-      remove: () =>
-        apply({ ...state, custom: state.custom.filter((_, j) => j !== i) }),
-    })),
+    ...(state.custom.length
+      ? [
+          {
+            id: "c",
+            label: customLabel,
+            remove: () => apply({ ...state, custom: [] }),
+          },
+        ]
+      : []),
   ];
 
   return {
@@ -54,9 +85,17 @@ export function useFilter<R extends { state: FilterState }>(
     badges,
     apply,
     toggleTemplate,
-    setSearch: (search: string) => apply({ ...state, search }),
-    addCustom: (c: FilterState["custom"][number]) =>
-      apply({ ...state, custom: [...state.custom, c] }),
+    setSearch: (term: string) => {
+      const t = term.trim();
+      if (!t || state.search.some((s) => s.toLowerCase() === t.toLowerCase())) {
+        return;
+      }
+      apply({ ...state, search: [...state.search, t] });
+    },
+    setAdvanced: (
+      groups: FilterState["groups"],
+      custom: FilterState["custom"],
+    ) => apply({ ...state, groups, custom }),
     goToPage: (page: number) => apply(state, page),
     reset: () => apply(defaultState(cfg)),
   };

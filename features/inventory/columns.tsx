@@ -2,7 +2,7 @@
 
 import { createColumnHelper } from "@tanstack/react-table";
 import type { DataTableFeatures } from "@/lib/data-table-features";
-import type { InventoryRow } from "@/features/inventory/definitions";
+import type { InventoryRow } from "./definitions";
 
 const columnHelper = createColumnHelper<DataTableFeatures, InventoryRow>();
 
@@ -33,5 +33,5 @@ export const columns = columnHelper.columns([
   columnHelper.accessor("uom", { header: "UoM", size: 72, minSize: 20 }),
   columnHelper.accessor("brand", { header: "Brand", size: 128, minSize: 60 }),
   columnHelper.accessor("whse", { header: "Whs", size: 96, minSize: 50 }),
-  columnHelper.accessor("binLoc", { header: "Loc", size: 96, minSize: 50 }),
+  columnHelper.accessor("bin_loc", { header: "Loc", size: 96, minSize: 50 }),
 ]);

@@ -1,6 +1,6 @@
 "use server";
-import { getInventoryPage } from "@/features/inventory/queries";
-import { inventoryFilter } from "@/features/inventory/filter.config";
+import { getInventoryPage } from "./queries";
+import { inventoryFilter } from "./filter.config";
 import { resolveFilter, type FilterState } from "@/lib/filter-config";
 
 export async function searchInventory(input: FilterState, page = 1) {

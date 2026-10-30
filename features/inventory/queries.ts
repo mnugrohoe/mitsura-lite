@@ -6,22 +6,8 @@ import {
   createDomain,
   parseDomainFilter,
 } from "@/lib/filter";
-import type { InventoryRow, Raw } from "./definitions";
+import type { InventoryRow } from "./definitions";
 import { inventoryFilter } from "./filter.config";
-
-function mapRow(r: Raw): InventoryRow {
-  return {
-    item: r.ITEM,
-    description: r.DESCRIPTION,
-    whse: r.WHSE,
-    binLoc: r.BIN_LOC,
-    brand: r.BRAND,
-    onhand: r.ONHAND,
-    uom: r.UOM,
-    unitCost: r.UNITCOST,
-    amount: r.AMOUNT,
-  };
-}
 
 /* ---------- SQL dasar (= InvtRpt.index00) ---------- */
 // Jangan akhiri dengan ";" dan jangan pakai komentar "--" di dalamnya,
@@ -36,7 +22,7 @@ SELECT
   b.brand,
   c.onhand,
   c.uom,
-  b.unitcost,
+  b.unitcost unit_cost,
   (b.unitcost * b.onhand) amount
 FROM m_item b INNER JOIN m_itemwhse c ON b.item = c.item
 UNION
@@ -48,7 +34,7 @@ SELECT
   a.brand,
   a.onhand,
   a.uom,
-  a.unitcost,
+  a.unitcost unit_cost,
   (a.unitcost * a.onhand) amount
 FROM m_item a
 `.trim();
@@ -116,7 +102,7 @@ export async function getInventoryPage({
   const { clause, binds } = buildWhere(filter);
   const maxRow = page * pageSize;
   const minRow = (page - 1) * pageSize;
-
+  console.log({ clause, binds });
   const q = `
   SELECT * FROM (
     SELECT t.*, ROWNUM rn FROM (
@@ -126,14 +112,14 @@ export async function getInventoryPage({
   )
   WHERE rn > :minRow`;
   // console.log(q, { ...binds, maxRow, minRow });
-  const rows = await query<Raw>(q, { ...binds, maxRow, minRow });
+  const rows = await query<InventoryRow>(q, { ...binds, maxRow, minRow });
 
-  const [{ TOTAL }] = await query<{ TOTAL: number }>(
+  const [{ total }] = await query<{ total: number }>(
     `SELECT COUNT(*) AS total FROM (${BASE_SQL}) ${clause}`,
     binds,
   );
 
-  return { rows: rows.map(mapRow), total: TOTAL, page, pageSize };
+  return { rows, total, page, pageSize };
 }
 
 /* ---------- Query untuk export (semua baris, tanpa paginasi) ---------- */
@@ -141,10 +127,10 @@ export async function getInventoryRows(
   filter: InventoryFilter = {},
 ): Promise<InventoryRow[]> {
   const { clause, binds } = buildWhere(filter);
-  const rows = await query<Raw>(
+  const rows = await query<InventoryRow>(
     `SELECT * FROM (${BASE_SQL}) ${clause} ORDER BY item, whse`,
     binds,
     { fetchArraySize: 1000 }, // ambil per 1000 baris, lebih cepat untuk data besar
   );
-  return rows.map(mapRow);
+  return rows;
 }

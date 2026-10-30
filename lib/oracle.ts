@@ -49,7 +49,17 @@ export async function query<T = Record<string, unknown>>(
   const conn = await pool.getConnection();
   try {
     const result = await conn.execute<T>(sql.trim(), binds, options);
-    return (result.rows ?? []) as T[];
+    return (
+      result.rows
+        ? result.rows.map((row) =>
+            Object.fromEntries(
+              Object.entries(row as Record<string, string | number>).map(
+                ([k, v]) => [k.toLowerCase(), v],
+              ),
+            ),
+          )
+        : []
+    ) as T[];
   } finally {
     await conn.close();
   }

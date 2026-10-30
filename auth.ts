@@ -33,19 +33,19 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (!user) return null;
         if (user.locked) return null;
 
-        if (!verifyPassword(password, user.passwordHash)) {
+        if (!verifyPassword(password, user.password_hash)) {
           await recordFailedLogin(user.id);
           return null;
         }
 
-        if (user.failedAttempts > 0) await resetFailedLogin(user.id);
+        if (user.failed_attempts > 0) await resetFailedLogin(user.id);
 
         return {
           id: user.id,
           username: user.username,
           fullname: user.fullName,
           email: user.email,
-          role: user.roleName?.trim() ?? "CUSTOM",
+          role: user.role_name?.trim() ?? "CUSTOM",
         };
       },
     }),

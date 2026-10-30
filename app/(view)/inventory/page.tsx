@@ -1,8 +1,8 @@
 import { inventoryFilter } from "@/features/inventory/filter.config";
+import { searchInventory } from "@/features/inventory/actions";
+import { InventoryView } from "@/features/inventory/view";
 import { defaultState } from "@/lib/filter-config";
 import { Suspense } from "react";
-import { searchInventory } from "./actions";
-import { InventoryView } from "./view";
 
 export default function InventoryPage() {
   return (

@@ -9,11 +9,11 @@ export type UserRecord = {
   id: string;
   username: string;
   fullName: string | null;
-  passwordHash: string | null;
+  password_hash: string | null;
   email: string | null;
-  failedAttempts: number;
+  failed_attempts: number;
   locked: boolean;
-  roleId: string | null;
-  roleName: string | null;
-  rolOffset: string | null;
+  role_id: string | null;
+  role_name: string | null;
+  rol_offset: string | null;
 };

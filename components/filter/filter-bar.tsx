@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Search, Star, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -11,14 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import type { FilterConfig } from "@/lib/filter-config";
 import type { useFilter } from "./use-filter";
 import { AdvancedFilter } from "./advanced-filter";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export function FilterBar({
   cfg,
@@ -69,36 +61,7 @@ export function FilterBar({
       </form>
 
       {/* Advanced Filter & Template buttons grouped together (justify-start) */}
-      <div className="flex flex-wrap items-center gap-2">
-        <AdvancedFilter
-          cfg={cfg}
-          onAdd={filter.addCustom}
-          disabled={filter.pending}
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Star className="size-4" /> Favorite
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Onhand Stock</DropdownMenuLabel>
-              {Object.entries(cfg.templates).map(([k, t]) => {
-                return (
-                  <DropdownMenuItem
-                    key={k}
-                    onClick={() => filter.toggleTemplate(k)}
-                    className="cursor-pointer"
-                  >
-                    {t.label}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <AdvancedFilter cfg={cfg} filter={filter} />
     </div>
   );
 }
